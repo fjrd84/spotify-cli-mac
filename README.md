@@ -22,6 +22,7 @@ Once you have created a new Spotify Application, just run the Spotify CLI with `
     recommend|rec               Recommend other songs based on the song currently playing.
 
     info|i                      Display information about the current track along with player status
+    watch|w                     The same as info, but refreshing the information on the screen
     play [uri]                  Continue playing current track or play the track with the provided URI
     pause                       Pause the current track
     next|n                      Play the next track in the queue
@@ -47,6 +48,7 @@ Once you have created a new Spotify Application, just run the Spotify CLI with `
 
     -h, --help     output usage information
     -V, --version  output the version number
+    notoken  don't ask for a token
 
 # Displaying Lyrics
 In order to be able to use the `lyrics` command, you will need to get a `Client Access Token` for the `Genius API`.
