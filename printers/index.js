@@ -3,6 +3,7 @@
 const chalk = require('chalk');
 const emoji = require('node-emoji');
 const ProgressBar = require('progress');
+const logUpdate = require('log-update');
 
 const SearchResultPrinters = {
 	'albums': albumPrinterFn,
@@ -82,6 +83,29 @@ function printSearchResults(resultType, data){
 	}
 }
 
+function progressBar(title, barConfig) {
+	let bar = '';
+	let index = 0;
+	const threshold = barConfig.width * barConfig.position / barConfig.total;
+	while (index < barConfig.width) {
+		bar += index <= threshold ? barConfig.complete : barConfig.incomplete;
+		index += 1;
+	}
+	return title.replace(':bar', bar);
+}
+
+function printContinuousDurationProgress(result){
+	var statusButton = result.status === 'playing' ? ':arrow_forward:' : ':double_vertical_bar:';
+	statusButton = emoji.emojify(statusButton);
+	return progressBar(`${statusButton}  ${result.status} [:bar] ${result.position} of ${result.duration}`, {
+		complete: '=',
+		incomplete: ' ',
+		width: 50,
+		position: result.positionSecs,
+		total: result.durationSecs
+	});
+}
+
 function printDurationProgress(result){
 	var statusButton = result.status === 'playing' ? ':arrow_forward:' : ':double_vertical_bar:';
 	statusButton = emoji.emojify(statusButton);
@@ -103,6 +127,16 @@ function printPlayerStatus(result){
 	console.log(emoji.emojify(album));
 	console.log();
 	printDurationProgress(result);
+}
+
+function printContinuousPlayerStatus(result) {
+	var artist = `:microphone:  ${chalk.green('Artist:')} ${chalk.green(result.artist)}`;
+	var track = `:musical_score:  ${chalk.green('Track:')} ${chalk.green(result.track)}`;
+	var album = `:cd:  ${chalk.green('Album:')} ${chalk.green(result.album)}`;
+	logUpdate(emoji.emojify(artist) + '\n' +
+		emoji.emojify(track) + '\n' +
+		emoji.emojify(album) +  '\n' +
+		printContinuousDurationProgress(result));
 }
 
 function printNext(result){
@@ -182,6 +216,7 @@ module.exports = {
 	warning,
 	printSearchResults,
 	printPlayerStatus,
+	printContinuousPlayerStatus,
 	printNext,
 	printPrevious,
 	printVolume,

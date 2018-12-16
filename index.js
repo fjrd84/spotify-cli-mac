@@ -15,6 +15,8 @@ const version = require('./package.json').version;
 const semver = require('semver');
 const os = require('os');
 const CONFIG_PATH = path.join(os.homedir(),'/.spotify-cli-config.json');
+const blessed = require('blessed');
+const screen = blessed.screen();
 
 nconf.env().file(CONFIG_PATH);
 // need client access token for genius
@@ -58,7 +60,9 @@ else {
 		printer.warning('Config file is already in default state.');
 		process.exit(0);
 	}
-	setTokens();
+	if (process.argv.indexOf('notoken') === -1) {
+		setTokens();
+	}
 	let SPOTIFY_CLIENT_ID = nconf.get('spotifyClientID');
 	let SPOTIFY_CLIENT_SECRET = nconf.get('spotifyClientSecret');
 	spotifyApi = initSpotifyApi(SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET);
@@ -201,6 +205,30 @@ program
 		spotifyClient.status().then((result) => {
 			printer.printPlayerStatus(result);
 		});
+	});
+
+program
+	.command('watch')
+	.alias('w')
+	.description('Display information about the current track along with player status')
+	.action(() => {
+
+		screen.render();
+		const printFun = () => {
+			spotifyClient.status().then((result) => {
+				printer.printContinuousPlayerStatus(result);
+			});
+		};
+
+		printFun();
+
+		const printInterval = setInterval(printFun, 2000);
+
+		// Exit on any key press
+		process.openStdin().on('keypress', () => {
+			clearInterval(printInterval);
+			process.exit();
+		}); 
 	});
 
 program
